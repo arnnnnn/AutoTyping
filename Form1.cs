@@ -25,7 +25,8 @@ namespace AutoTyping
             InitializeComponent();
             KeyPreview = true;
         }
-
+        
+        // 29~96 Keyboard Hooking
         [DllImport("user32.dll")]
         static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc callback, IntPtr hInstance, uint threadId);
 
@@ -38,7 +39,7 @@ namespace AutoTyping
         static extern IntPtr LoadLibrary(string lpFileName);
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode,IntPtr wParam,IntPtr lParam);
-
+        
         const int WH_KEYBOARD_LL = 13;
         const int WM_KEYDOWN = 0x100;
             
@@ -64,7 +65,7 @@ namespace AutoTyping
 
                 if (vkCode.ToString() == "65")
                 {
-                    //MessageBox.Show("You Pressed a A");
+                    MessageBox.Show("You Pressed a A");
                 }
                 else if (vkCode.ToString() == "33")
                 {
@@ -92,6 +93,8 @@ namespace AutoTyping
         {
             SetHook();
         }
+        //END
+
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -110,7 +113,5 @@ namespace AutoTyping
                     break;
             }
         }
-
-
     }   
 }
