@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,8 +18,97 @@ using System.Runtime.InteropServices;
 
 
 
+//IME 한영키 상태 구현, 영어 한글 구분후 한글 -> 영어로 변환후 sendkey
+
+
+
 namespace AutoTyping
 {
+    public class Matching_Table
+    {
+        const int INITIAL_CONS = 19;
+        const int MEDIAL_CONS = 21;
+        const int FINAL_CONS = 28;
+
+
+        readonly char[] initialConsonant_kor =  
+        {
+            'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ',
+            'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ',
+            'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ',
+            'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ',
+            'ㅌ', 'ㅍ', 'ㅎ'
+        };
+
+        readonly char[] initialConsonant_eng =  
+        {
+            'r', 'R', 's', 'e',
+            'E', 'f', 'a', 'q',
+            'Q', 't', 'T', 'd',
+            'w', 'W', 'c', 'z',
+            'x', 'v', 'g'
+        };
+
+        readonly char[] medialConsonant_kor =  
+        {
+            'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ',
+            'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ',
+            'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ',
+            'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ',
+            'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'
+        };
+
+        readonly char[] medialConsonant_eng = 
+        {
+            'k', 'o', 'i', 'O',
+            'j', 'p', 'u', 'P',
+            'h', ' ', ' ', ' ',
+            'y', 'n', ' ', ' ',
+            ' ', 'b', 'm', ' ', 'l'
+        };
+
+        readonly char[] finalConsonant_kor = 
+        {
+            ' ', 'ㄱ', 'ㄲ', 'ㄳ',
+            'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ',
+            'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ',
+            'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ',
+            'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ',
+            'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ',
+            'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+        };
+
+        readonly char[] finalConsonant_eng = 
+        {
+            ' ', 'r', 'R', ' ',
+            's', ' ', ' ', 'e',
+            'f', ' ', ' ', ' ',
+            ' ', ' ', ' ', ' ',
+            'a', 'q', ' ', 't',
+            'T', 'd', 'w', 'c',
+            'z', 'x', 'v', 'g'
+        };
+
+        readonly char[] pairConsonant_kor = 
+        {
+            'ㅘ', 'ㅙ', 'ㅚ', 'ㅝ',
+            'ㅞ', 'ㅟ', 'ㅢ', 'ㄳ',
+            'ㄵ', 'ㄶ', 'ㄺ', 'ㄻ',
+            'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ',
+            'ㅀ', 'ㅄ'
+        };
+
+
+        readonly char[] pairConsonant_eng = 
+        {
+            "hk", "ho", "hl", "nj",
+            "np", "nl", "ml", "rt",
+            "sw", "sg", "fr", "fa",
+            "fq", "ft", "fx", "fv",
+            "fg", "qt"
+        };
+}
+
     public partial class Form1 : Form
     {
         public Form1()
