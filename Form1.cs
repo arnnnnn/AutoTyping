@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 
 
-//IME 한영키 상태 구현, 영어 한글 구분후 한글 -> 영어로 변환후 sendkey
+//Todo - IME Han/Eng State , Check txtbox , han,eng check  // if hangle toEng ->  sendkey
 
 
 
@@ -98,8 +98,8 @@ namespace AutoTyping
             'ㅀ', 'ㅄ'
         };
 
-
-        readonly char[] pairConsonant_eng = 
+        //this is string Array, if you using this Array, must recognize that it's a string Array.
+        readonly string[] pairConsonant_eng = 
         {
             "hk", "ho", "hl", "nj",
             "np", "nl", "ml", "rt",
@@ -108,7 +108,7 @@ namespace AutoTyping
             "fg", "qt"
         };
 }
-
+    
     public partial class Form1 : Form
     {
         public Form1()
