@@ -34,28 +34,30 @@
             // 
             // MainTextBOx
             // 
-            this.MainTextBOx.Location = new System.Drawing.Point(25, 54);
+            this.MainTextBOx.Location = new System.Drawing.Point(22, 43);
+            this.MainTextBOx.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MainTextBOx.Multiline = true;
             this.MainTextBOx.Name = "MainTextBOx";
-            this.MainTextBOx.Size = new System.Drawing.Size(552, 596);
+            this.MainTextBOx.Size = new System.Drawing.Size(484, 478);
             this.MainTextBOx.TabIndex = 0;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(623, 54);
+            this.label1.Location = new System.Drawing.Point(545, 43);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(332, 15);
+            this.label1.Size = new System.Drawing.Size(271, 12);
             this.label1.TabIndex = 2;
             this.label1.Text = "Page Up을 이용하여 Text Send 기능을 이용가능";
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1282, 666);
+            this.ClientSize = new System.Drawing.Size(1122, 533);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.MainTextBOx);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Auto Typing Software";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
