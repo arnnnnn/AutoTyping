@@ -24,7 +24,11 @@ using System.Runtime.InteropServices;
 
 namespace AutoTyping
 {
-    public class Matching_Table
+    
+    
+    public partial class Form1 : Form
+    {
+        public class Matching_Table
     {
         const int INITIAL_CONS = 19;
         const int MEDIAL_CONS = 21;
@@ -108,16 +112,14 @@ namespace AutoTyping
             "fg", "qt"
         };
 }
-    
-    public partial class Form1 : Form
-    {
         public Form1()
         {
             InitializeComponent();
             KeyPreview = true;
         }
-        
-        // 29~96 Keyboard Hooking
+
+        #region  Keyboard Hooking and Check Hangle Mode.
+
         [DllImport("user32.dll")]
         static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc callback, IntPtr hInstance, uint threadId);
 
@@ -129,11 +131,12 @@ namespace AutoTyping
         [DllImport("kernel32.dll")]
         static extern IntPtr LoadLibrary(string lpFileName);
 
-        private delegate IntPtr LowLevelKeyboardProc(int nCode,IntPtr wParam,IntPtr lParam);
-        
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+
         const int WH_KEYBOARD_LL = 13;
         const int WM_KEYDOWN = 0x100;
-            
         private LowLevelKeyboardProc _proc = hookProc;
         private static IntPtr hhook = IntPtr.Zero;
 
@@ -175,6 +178,7 @@ namespace AutoTyping
                 return CallNextHookEx(hhook, code, (int)wParam, IParam);
         }
 
+
         private void Form1_FormClosing(object sender, CancelEventArgs e)
         {
             UnHook();
@@ -184,7 +188,7 @@ namespace AutoTyping
         {
             SetHook();
         }
-        //END
+        #endregion
 
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
