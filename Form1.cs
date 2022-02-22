@@ -28,6 +28,7 @@ namespace AutoTyping
     
     public partial class Form1 : Form
     {
+
         public class Matching_Table
     {
         const int INITIAL_CONS = 19;
@@ -112,13 +113,18 @@ namespace AutoTyping
             "fg", "qt"
         };
 }
+
+        
         public Form1()
         {
             InitializeComponent();
+            
             KeyPreview = true;
         }
 
         #region  Keyboard Hooking and Check Hangle Mode.
+
+        //For Keyboard Hooking
 
         [DllImport("user32.dll")]
         static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc callback, IntPtr hInstance, uint threadId);
@@ -130,6 +136,14 @@ namespace AutoTyping
 
         [DllImport("kernel32.dll")]
         static extern IntPtr LoadLibrary(string lpFileName);
+
+        //For Check Hangle Mode 
+        [DllImport("imm32.dll")]
+        private static extern IntPtr ImmGetContext(IntPtr hwnd);
+        [DllImport("imm32.dll")]
+        private static extern bool ImmGetConversionStatus(IntPtr himc, ref int lpdw, ref int lpdw2);
+
+
 
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
