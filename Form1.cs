@@ -33,6 +33,7 @@ namespace AutoTyping
         {
             public static string Text;
             public static List<int> CheckPoint;
+            
         }
         public class Matching_Table
     {
@@ -143,11 +144,16 @@ namespace AutoTyping
         [DllImport("kernel32.dll")]
         static extern IntPtr LoadLibrary(string lpFileName);
 
-        //For Check Hangle Mode 
+        //For exchange between korean and english
         [DllImport("imm32.dll")]
-        private static extern IntPtr ImmGetContext(IntPtr hwnd);
+        private static extern IntPtr ImmGetContext(IntPtr hWnd);
         [DllImport("imm32.dll")]
-        private static extern bool ImmGetConversionStatus(IntPtr himc, ref int lpdw, ref int lpdw2);
+        private static extern Boolean ImmSetConversionStatus(IntPtr hIMC, Int32 fdwConversion,Int32 fdwSentence);
+        [DllImport("imm32.dll")]
+        public static extern IntPtr ImmGetDefaultIMEWnd(IntPtr hWnd);
+        [DllImport("imm32.dll")]
+        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+
         #endregion
 
 
@@ -195,28 +201,24 @@ namespace AutoTyping
 
                         else
                         {
-                            if (Check_hangul(txt, i))
-                            {
                                 prv = false;
                                 MessageBox.Show(txt[i].ToString() + " is not hangul");
                                 if (prv == true)
                                 {
                                     GlobalVar.CheckPoint.Add(i);
-                                }
-                            }
-                            
+                                }   
                         }
                             
                     }
                 }
                 else if (vkCode.ToString() == "33")
                 {
-                    string txt = "Page Up이 눌림";
+                    string txt = "Pge Up이 눌림";
                     for (int j = 0; j < txt.Length; j++)
                     {
                         string data = txt[j].ToString();
                         SendKeys.SendWait(data);
-                        Task.Delay(100).Wait();
+                        Task.Delay(1000).Wait();
 
                     }
                 }
@@ -239,6 +241,28 @@ namespace AutoTyping
         }
         #endregion
 
+        #region exchange between korean and english
+        public const int IME_CMODE_ALPHANUMERIC = 0X0;//english
+        public const int IME_CMODE_NATIVE = 0x1;//korean
+
+        public void ChangeIME(bool b_toggle)
+        {
+            IntPtr hwnd = ImmGetContext(this.Handle);//Only Apply in C# Windows Form.
+            // Kor <-> Eng ||  b_toggle: ture = Kor , false= Eng.
+            Int32 dwConversion = (b_toggle == true ? IME_CMODE_NATIVE : IME_CMODE_ALPHANUMERIC);
+            ImmSetConversionStatus(hwnd, dwConversion, 0);
+        }
+
+
+
+        #endregion
+
+        /// <summary>
+        /// 문자열을 받고 문자위치를 받아서 특정문자가 한글인지 아닌지 체크하는 메소드
+        /// </summary>
+        /// <param name="hangul">string으로 문자열을 받는 매개변수.</param>
+        /// <param name="pos">int형으로 특정위치를 받는 매개변수.</param>
+        /// <returns></returns>
         public static bool Check_hangul(string hangul,int pos)
         {
             if (char.GetUnicodeCategory(hangul[pos]) == System.Globalization.UnicodeCategory.OtherLetter)
@@ -251,7 +275,7 @@ namespace AutoTyping
         {
             switch (e.KeyData)
             {
-                case Keys.PageUp:
+                case Keys.PageDown:
                     string txt = MainTextBox.Text;
                     for (int i = 0; i < txt.Length; i++)
                     {
