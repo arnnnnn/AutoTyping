@@ -118,12 +118,15 @@ namespace AutoTyping
         public Form1()
         {
             InitializeComponent();
-            
+
+
             KeyPreview = true;
         }
 
-        #region  Keyboard Hooking and Check Hangle Mode.
+        
 
+
+        #region DllImport Part for Hooking and IME
         //For Keyboard Hooking
 
         [DllImport("user32.dll")]
@@ -142,10 +145,10 @@ namespace AutoTyping
         private static extern IntPtr ImmGetContext(IntPtr hwnd);
         [DllImport("imm32.dll")]
         private static extern bool ImmGetConversionStatus(IntPtr himc, ref int lpdw, ref int lpdw2);
+        #endregion
 
 
-
-
+        #region  Keyboard Hooking Method
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
 
@@ -173,7 +176,12 @@ namespace AutoTyping
 
                 if (vkCode.ToString() == "65")
                 {
-                    MessageBox.Show("You Pressed a A");
+                    string txt = "gd 안녕";
+                    
+                    if(Check_hangul(txt, 2))
+                        MessageBox.Show("this is hangul");
+                    else
+                        MessageBox.Show("this is not hangul");
                 }
                 else if (vkCode.ToString() == "33")
                 {
@@ -204,6 +212,13 @@ namespace AutoTyping
         }
         #endregion
 
+        public static bool Check_hangul(string hangul,int pos)
+        {
+            if (char.GetUnicodeCategory(hangul[pos]) == System.Globalization.UnicodeCategory.OtherLetter)
+                return true;
+            else
+                return false;
+        }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
