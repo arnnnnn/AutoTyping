@@ -28,18 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.MainTextBOx = new System.Windows.Forms.TextBox();
+            this.MainTextBox = new System.Windows.Forms.TextBox();
             this.KeyStatus = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // MainTextBOx
+            // MainTextBox
             // 
-            this.MainTextBOx.Location = new System.Drawing.Point(25, 54);
-            this.MainTextBOx.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.MainTextBOx.Multiline = true;
-            this.MainTextBOx.Name = "MainTextBOx";
-            this.MainTextBOx.Size = new System.Drawing.Size(553, 596);
-            this.MainTextBOx.TabIndex = 0;
+            this.MainTextBox.Location = new System.Drawing.Point(25, 54);
+            this.MainTextBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.MainTextBox.Multiline = true;
+            this.MainTextBox.Name = "MainTextBox";
+            this.MainTextBox.Size = new System.Drawing.Size(553, 596);
+            this.MainTextBox.TabIndex = 0;
+            this.MainTextBox.TextChanged += new System.EventHandler(this.MainTextBox_TextChanged);
             // 
             // KeyStatus
             // 
@@ -56,7 +57,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1282, 666);
             this.Controls.Add(this.KeyStatus);
-            this.Controls.Add(this.MainTextBOx);
+            this.Controls.Add(this.MainTextBox);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Auto Typing Software";
@@ -69,9 +70,8 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox MainTextBOx;
         private System.Windows.Forms.Label KeyStatus;
+        private System.Windows.Forms.TextBox MainTextBox;
     }
 }
 
