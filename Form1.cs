@@ -32,93 +32,102 @@ namespace AutoTyping
         public static class GlobalVar
         {
             public static string Text;
-            public static List<int> CheckPoint;
-            
         }
-        public class Matching_Table
-    {
-        const int INITIAL_CONS = 19;
-        const int MEDIAL_CONS = 21;
-        const int FINAL_CONS = 28;
-
-
-        readonly char[] initialConsonant_kor =  
+        public static class Matching_Table
         {
-            'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ',
-            'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ',
-            'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ',
-            'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ',
-            'ㅌ', 'ㅍ', 'ㅎ'
-        };
 
-        readonly char[] initialConsonant_eng =  
-        {
-            'r', 'R', 's', 'e',
-            'E', 'f', 'a', 'q',
-            'Q', 't', 'T', 'd',
-            'w', 'W', 'c', 'z',
-            'x', 'v', 'g'
-        };
+            /// <summary>
+            /// number of three type consonants in Hangul ( Initial,Medial, Final ) 
+            /// </summary>
+            public const int INITIAL_CONS = 19;
+            public const int MEDIAL_CONS = 21;
+            public const int FINAL_CONS = 28;
+            /// <summary>
+            ///  HANGUL_UNICODE_START_INDEX -> Hangul Unicode Start Index
+            ///  HANGUL_UNICODE_END_INDEX -> Hangul Unicode End Index
+            /// </summary>
+            public const int HANGUL_UNICODE_START_INDEX = 0xac00;
+            public const int HANGUL_UNICODE_END_INDEX = 0xD7A3;
+            /// <summary>
+            /// divide Start INDEX  
+            /// INITIAL -> initial consonant Start Index
+            /// MEDIAL ->  medial consonant Start Index
+            /// FINAL -> final consonant Start Index
+            /// </summary>
+            public const int INITIAL_START_INDEX = 0x1100;
+            public const int MEDIAL_START_INDEX = 0x1161;
+            public const int FINAL_START_INDEX = 0x11a7;
 
-        readonly char[] medialConsonant_kor =  
-        {
-            'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ',
-            'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ',
-            'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ',
-            'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ',
-            'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'
-        };
-
-        readonly char[] medialConsonant_eng = 
-        {
-            'k', 'o', 'i', 'O',
-            'j', 'p', 'u', 'P',
-            'h', ' ', ' ', ' ',
-            'y', 'n', ' ', ' ',
-            ' ', 'b', 'm', ' ', 'l'
-        };
-
-        readonly char[] finalConsonant_kor = 
-        {
-            ' ', 'ㄱ', 'ㄲ', 'ㄳ',
-            'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ',
-            'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ',
-            'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ',
-            'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ',
-            'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ',
-            'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
-        };
-
-        readonly char[] finalConsonant_eng = 
-        {
-            ' ', 'r', 'R', ' ',
-            's', ' ', ' ', 'e',
-            'f', ' ', ' ', ' ',
-            ' ', ' ', ' ', ' ',
-            'a', 'q', ' ', 't',
-            'T', 'd', 'w', 'c',
-            'z', 'x', 'v', 'g'
-        };
-
-        readonly char[] pairConsonant_kor = 
-        {
-            'ㅘ', 'ㅙ', 'ㅚ', 'ㅝ',
-            'ㅞ', 'ㅟ', 'ㅢ', 'ㄳ',
-            'ㄵ', 'ㄶ', 'ㄺ', 'ㄻ',
-            'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ',
-            'ㅀ', 'ㅄ'
-        };
-
-        //this is string Array, if you using this Array, must recognize that it's a string Array.
-        readonly string[] pairConsonant_eng = 
-        {
-            "hk", "ho", "hl", "nj",
-            "np", "nl", "ml", "rt",
-            "sw", "sg", "fr", "fa",
-            "fq", "ft", "fx", "fv",
-            "fg", "qt"
-        };
-}
+            public static readonly char[] initialConsonant_kor =
+                    {
+                    'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ',
+                    'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ',
+                    'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ',
+                    'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ',
+                    'ㅌ', 'ㅍ', 'ㅎ'
+                };
+            public static readonly char[] initialConsonant_eng =
+                    {
+                    'r', 'R', 's', 'e',
+                    'E', 'f', 'a', 'q',
+                    'Q', 't', 'T', 'd',
+                    'w', 'W', 'c', 'z',
+                    'x', 'v', 'g'
+                };
+            public static readonly char[] medialConsonant_kor =
+                    {
+                    'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ',
+                    'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ',
+                    'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ',
+                    'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ',
+                    'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'
+                };
+            public static readonly char[] medialConsonant_eng =
+                    {
+                    'k', 'o', 'i', 'O',
+                    'j', 'p', 'u', 'P',
+                    'h', ' ', ' ', ' ',
+                    'y', 'n', ' ', ' ',
+                    ' ', 'b', 'm', ' ', 'l'
+                };
+            public static readonly char[] finalConsonant_kor =
+                    {
+                    ' ', 'ㄱ', 'ㄲ', 'ㄳ',
+                    'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ',
+                    'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ',
+                    'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ',
+                    'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ',
+                    'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ',
+                    'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+                };
+            public static readonly char[] finalConsonant_eng =
+                    {
+                    ' ', 'r', 'R', ' ',
+                    's', ' ', ' ', 'e',
+                    'f', ' ', ' ', ' ',
+                    ' ', ' ', ' ', ' ',
+                    'a', 'q', ' ', 't',
+                    'T', 'd', 'w', 'c',
+                    'z', 'x', 'v', 'g'
+                };
+            public static readonly char[] pairConsonant_kor =
+                    {
+                    'ㅘ', 'ㅙ', 'ㅚ', 'ㅝ',
+                    'ㅞ', 'ㅟ', 'ㅢ', 'ㄳ',
+                    'ㄵ', 'ㄶ', 'ㄺ', 'ㄻ',
+                    'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ',
+                    'ㅀ', 'ㅄ'
+                };
+            //this is string Array, if you using this Array, must recognize that it's a string Array.
+            public static readonly string[] pairConsonant_eng =
+                    {
+                    "hk", "ho", "hl", "nj",
+                    "np", "nl", "ml", "rt",
+                    "sw", "sg", "fr", "fa",
+                    "fq", "ft", "fx", "fv",
+                    "fg", "qt"
+                };
+        }
 
         
         public Form1()
@@ -186,30 +195,31 @@ namespace AutoTyping
                 if (vkCode.ToString() == "65")
                 {
                     string txt = GlobalVar.Text;
-                    bool prv = default;
-                    for(int i = 0; i < txt.Length; i++)
+                    try
                     {
-                        if (Check_hangul(txt, i))
-                        {
-                            prv = true;
-                            MessageBox.Show(txt[i].ToString() + " is hangul");
-                            if (prv == false)
-                            {
-                                GlobalVar.CheckPoint.Add(i);
-                            }
-                        }
-
+                        if (txt==null || txt.Length==0)
+                            MessageBox.Show("There is nothing");
                         else
                         {
-                                prv = false;
-                                MessageBox.Show(txt[i].ToString() + " is not hangul");
-                                if (prv == true)
+                            for(int i = 0; i < txt.Length; i++)
+                            {
+                                if (IsHangul(txt, i))
                                 {
-                                    GlobalVar.CheckPoint.Add(i);
-                                }   
+                                    MessageBox.Show(txt[i].ToString() + " is hangul");
+                                }
+
+                                else
+                                {
+                                    MessageBox.Show(txt[i].ToString() + " is not hangul");
+                                }
+                            }
                         }
-                            
                     }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show("에러가 발생했습니다 !! 에러 내용 : "+ex.ToString());
+                    }
+
                 }
                 else if (vkCode.ToString() == "33")
                 {
@@ -263,13 +273,17 @@ namespace AutoTyping
         /// <param name="hangul">string으로 문자열을 받는 매개변수.</param>
         /// <param name="pos">int형으로 특정위치를 받는 매개변수.</param>
         /// <returns></returns>
-        public static bool Check_hangul(string hangul,int pos)
+        public static bool IsHangul(string hangul,int pos)
         {
-            if (char.GetUnicodeCategory(hangul[pos]) == System.Globalization.UnicodeCategory.OtherLetter)
-                return true;
+            bool res=false;
+            if (Regex.IsMatch(hangul[pos].ToString(), @"[ㄱ-ㅎㅏ-ㅣ가-힣]"))
+                res= true;
             else
-                return false;
+                res = false;
+            return res;
         }
+
+
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
