@@ -32,6 +32,8 @@ namespace AutoTyping
         public static class GlobalVar
         {
             public static string Text;
+            public static IntPtr hwnd;
+            public static bool IMEmode=false;
         }
         public static class Matching_Table
         {
@@ -42,11 +44,12 @@ namespace AutoTyping
             public const int INITIAL_CONS = 19;
             public const int MEDIAL_CONS = 21;
             public const int FINAL_CONS = 28;
+            public const int MF = MEDIAL_CONS * FINAL_CONS;
             /// <summary>
             ///  HANGUL_UNICODE_START_INDEX -> Hangul Unicode Start Index
             ///  HANGUL_UNICODE_END_INDEX -> Hangul Unicode End Index
             /// </summary>
-            public const int HANGUL_UNICODE_START_INDEX = 0xac00;
+            public const int HANGUL_UNICODE_START_INDEX = 0xAC00;
             public const int HANGUL_UNICODE_END_INDEX = 0xD7A3;
             /// <summary>
             /// divide Start INDEX  
@@ -192,45 +195,50 @@ namespace AutoTyping
             {
                 int vkCode = Marshal.ReadInt32(IParam);
 
-                if (vkCode.ToString() == "65")
+                if (vkCode.ToString() == "45")
                 {
                     string txt = GlobalVar.Text;
                     try
                     {
-                        if (txt==null || txt.Length==0)
-                            MessageBox.Show("There is nothing");
+                        if (txt==null || txt.Length == 0)
+                            MessageBox.Show("There \ris nothing");
+                        
                         else
                         {
                             for(int i = 0; i < txt.Length; i++)
                             {
+                                if (txt[i] == '\n')
+                                {
+                                    //SendKeys.SendWait(txt[i].ToString());
+                                    continue;
+                                }
+                                    
                                 if (IsHangul(txt, i))
                                 {
-                                    MessageBox.Show(txt[i].ToString() + " is hangul");
+                                    string dvd= DivideHangul(txt, i);
+                                    for(int k=0;k<dvd.Length; k++)
+                                    {
+                                        SendKeys.SendWait(dvd[k].ToString());
+                                        Thread.Sleep(1000);
+                                    }
+                                    
+                                    //MessageBox.Show(txt[i].ToString() + " is hangul");
                                 }
 
                                 else
                                 {
-                                    MessageBox.Show(txt[i].ToString() + " is not hangul");
+                                    //MessageBox.Show(txt[i].ToString() + " is not hangul");
+                                    SendKeys.SendWait(txt[i].ToString());
                                 }
                             }
                         }
                     }
-                    catch(Exception ex)
+                    catch(Exception e)
                     {
-                        MessageBox.Show("에러가 발생했습니다 !! 에러 내용 : "+ex.ToString());
+                        MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
+                        MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
                     }
 
-                }
-                else if (vkCode.ToString() == "33")
-                {
-                    string txt = "Pge Up이 눌림";
-                    for (int j = 0; j < txt.Length; j++)
-                    {
-                        string data = txt[j].ToString();
-                        SendKeys.SendWait(data);
-                        Task.Delay(1000).Wait();
-
-                    }
                 }
                 return CallNextHookEx(hhook,code,(int)wParam,IParam);
             }
@@ -248,19 +256,39 @@ namespace AutoTyping
         private void Form1_Load(object sender, EventArgs e)
         {
             SetHook();
+            IntPtr hwnd=ImmGetContext(this.Handle);
+            GlobalVar.hwnd = hwnd;
+            
         }
         #endregion
 
-        #region exchange between korean and english
-        public const int IME_CMODE_ALPHANUMERIC = 0X0;//english
-        public const int IME_CMODE_NATIVE = 0x1;//korean
+        #region IMEmode change between korean and english
 
-        public void ChangeIME(bool b_toggle)
+        public static void ChangeIME(int target)
         {
-            IntPtr hwnd = ImmGetContext(this.Handle);//Only Apply in C# Windows Form.
-            // Kor <-> Eng ||  b_toggle: ture = Kor , false= Eng.
-            Int32 dwConversion = (b_toggle == true ? IME_CMODE_NATIVE : IME_CMODE_ALPHANUMERIC);
-            ImmSetConversionStatus(hwnd, dwConversion, 0);
+            try
+            {
+                ImmSetConversionStatus(GlobalVar.hwnd, target, 0);
+                /*if (GlobalVar.IMEmode)
+                {
+                    GlobalVar.IMEmode = false;
+                    
+                    ImmSetConversionStatus(GlobalVar.hwnd, 0, 0);
+                    MessageBox.Show("Done. Change IME MODE kor to eng");
+                }
+                else
+                {
+                    GlobalVar.IMEmode = true;
+                    ImmSetConversionStatus(GlobalVar.hwnd, 1, 0);
+                    MessageBox.Show("Done. Change IME MODE eng to kor");
+                }*/
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
+                MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
+            }
+
         }
 
 
@@ -268,10 +296,10 @@ namespace AutoTyping
         #endregion
 
         /// <summary>
-        /// 문자열을 받고 문자위치를 받아서 특정문자가 한글인지 아닌지 체크하는 메소드
+        /// Get Some string and INDEX as string and int 
         /// </summary>
-        /// <param name="hangul">string으로 문자열을 받는 매개변수.</param>
-        /// <param name="pos">int형으로 특정위치를 받는 매개변수.</param>
+        /// <param name="hangul">Get string for check hangul</param>
+        /// <param name="pos">Get Index number as int.</param>
         /// <returns></returns>
         public static bool IsHangul(string hangul,int pos)
         {
@@ -281,6 +309,52 @@ namespace AutoTyping
             else
                 res = false;
             return res;
+        }
+
+        public static string DivideHangul(string hangul,int pos)
+        {
+            string divided = null;
+            int interval=0;
+
+            if (Matching_Table.initialConsonant_kor.Contains(hangul[pos]) || Matching_Table.medialConsonant_kor.Contains(hangul[pos])
+                || Matching_Table.finalConsonant_kor.Contains(hangul[pos]) )
+                return hangul[pos].ToString();
+            else
+            {
+                interval = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
+                divided += Matching_Table.initialConsonant_kor[interval / Matching_Table.MF];
+                divided += Matching_Table.medialConsonant_kor[interval % Matching_Table.MF / Matching_Table.FINAL_CONS];
+                divided += (Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS] == ' ') ? '\0' : Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS];
+            }
+            
+
+            
+
+
+
+
+            /* init method -> it's imperfect
+            int index = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
+
+            
+            int initial = Matching_Table.INITIAL_START_INDEX + index/(Matching_Table.MEDIAL_CONS*Matching_Table.FINAL_CONS);
+            int medial = Matching_Table.MEDIAL_START_INDEX + (index % (Matching_Table.MEDIAL_CONS * Matching_Table.FINAL_CONS)) / Matching_Table.FINAL_CONS;
+            int final = -Matching_Table.FINAL_START_INDEX + index % Matching_Table.FINAL_CONS;
+
+            if (final == 4519)
+            {
+                divided += (char)initial;
+                divided+=(char)medial;
+            }
+            else
+            {
+                divided += (char)initial;
+                divided += (char)medial;
+                divided += (char)final;
+            }
+            */
+
+            return divided;
         }
 
 
