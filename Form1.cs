@@ -61,7 +61,7 @@ namespace AutoTyping
             public const int MEDIAL_START_INDEX = 0x1161;
             public const int FINAL_START_INDEX = 0x11a7;
 
-            public static readonly char[] initialConsonant_kor =
+            public static  char[] initialConsonant_kor =
                     {
                     'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ',
                     'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ',
@@ -296,6 +296,44 @@ namespace AutoTyping
 
 
         #endregion
+
+
+        public static string ToAlphabet(string divided)
+        {
+            string Changed="";
+            try
+            {
+                for (int rep = 0; rep < divided.Length; rep++)
+                {
+                    if (Matching_Table.initialConsonant_kor.Contains(divided[rep]))
+                    {
+                        Changed += Matching_Table.initialConsonant_eng[Array.IndexOf(Matching_Table.initialConsonant_kor, divided[rep])];
+                    }
+                    else if (Matching_Table.medialConsonant_kor.Contains(divided[rep]))
+                    {
+                        Changed += Matching_Table.medialConsonant_eng[Array.IndexOf(Matching_Table.initialConsonant_kor, divided[rep])];
+                    }
+                    else if (Matching_Table.finalConsonant_kor.Contains(divided[rep]))
+                    {
+                        Changed += Matching_Table.finalConsonant_eng[Array.IndexOf(Matching_Table.finalConsonant_kor, divided[rep])];
+                    }
+                    else if (Matching_Table.pairConsonant_kor.Contains(divided[rep]))
+                    {
+                        Changed += Matching_Table.pairConsonant_eng[Array.IndexOf(Matching_Table.pairConsonant_kor, divided[rep])];
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error occured");
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
+                MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
+            }
+            return Changed;
+        }
 
 
         #region this region for check,divide hangul method...  will be add change hangul to english method.
