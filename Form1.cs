@@ -201,29 +201,32 @@ namespace AutoTyping
                     try
                     {
                         if (txt==null || txt.Length == 0)
-                            MessageBox.Show("There \ris nothing");
+                            MessageBox.Show("I can't find any Text for run this program.\nInput some text.");
                         
                         else
                         {
                             for(int i = 0; i < txt.Length; i++)
                             {
-                                if (txt[i] == '\n')
-                                {
-                                    //SendKeys.SendWait(txt[i].ToString());
-                                    continue;
-                                }
-                                    
                                 if (IsHangul(txt, i))
                                 {
-                                    string dvd= DivideHangul(txt, i);
-                                    for(int k=0;k<dvd.Length; k++)
+                                    string dvd = DivideHangul(txt, i);
+                                    for (int k = 0; k < dvd.Length; k++)
                                     {
                                         SendKeys.SendWait(dvd[k].ToString());
-                                        Thread.Sleep(1000);
+                                        Thread.Sleep(500);
                                     }
-                                    
-                                    //MessageBox.Show(txt[i].ToString() + " is hangul");
                                 }
+                                #region Is txt[i] is SpecialLetter ? 
+
+                                else if (txt[i] == '\n')
+                                {
+                                    SendKeys.SendWait(txt[i].ToString());
+                                }
+                                else if (txt[i] ==' ')
+                                {
+                                    SendKeys.SendWait(txt[i].ToString());
+                                }
+                                #endregion
 
                                 else
                                 {
@@ -257,8 +260,7 @@ namespace AutoTyping
         {
             SetHook();
             IntPtr hwnd=ImmGetContext(this.Handle);
-            GlobalVar.hwnd = hwnd;
-            
+            GlobalVar.hwnd = hwnd;  
         }
         #endregion
 
@@ -322,20 +324,30 @@ namespace AutoTyping
         public static string DivideHangul(string hangul,int pos)
         {
             // test at 2022.03.05 ... it was perfect.
+            // have to test many case for catch some error.
             string divided = null;
             int interval=0;
 
-            if (Matching_Table.initialConsonant_kor.Contains(hangul[pos]) || Matching_Table.medialConsonant_kor.Contains(hangul[pos])
-                || Matching_Table.finalConsonant_kor.Contains(hangul[pos]) )
-                return hangul[pos].ToString();
-            else
+            try
             {
-                interval = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
-                divided += Matching_Table.initialConsonant_kor[interval / Matching_Table.MF];
-                divided += Matching_Table.medialConsonant_kor[interval % Matching_Table.MF / Matching_Table.FINAL_CONS];
-                divided += (Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS] == ' ') ? '\0' : Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS];
+                if (Matching_Table.initialConsonant_kor.Contains(hangul[pos]) || Matching_Table.medialConsonant_kor.Contains(hangul[pos])
+                || Matching_Table.finalConsonant_kor.Contains(hangul[pos]))
+                    return hangul[pos].ToString();
+                else
+                {
+                    interval = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
+                    divided += Matching_Table.initialConsonant_kor[interval / Matching_Table.MF];
+                    divided += Matching_Table.medialConsonant_kor[interval % Matching_Table.MF / Matching_Table.FINAL_CONS];
+                    divided += (Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS] == ' ') ? '\0' : Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS];
+                }
             }
-            
+            catch (Exception e)
+            {
+                MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
+                MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
+            }
+
+            return divided;
             /* init method -> it's imperfect
             int index = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
 
@@ -356,8 +368,6 @@ namespace AutoTyping
                 divided += (char)final;
             }
             */
-
-            return divided;
         }
 
         #endregion
