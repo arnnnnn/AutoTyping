@@ -295,6 +295,8 @@ namespace AutoTyping
 
         #endregion
 
+
+        #region this region for check,divide hangul method...  will be add change hangul to english method.
         /// <summary>
         /// Get Some string and INDEX as string and int 
         /// </summary>
@@ -311,8 +313,15 @@ namespace AutoTyping
             return res;
         }
 
+        /// <summary>
+        /// DivideHangul Method. 
+        /// </summary>
+        /// <param name="hangul">This param is get sentence as string</param>
+        /// <param name="pos">This param is for index number as int</param>
+        /// <returns></returns>
         public static string DivideHangul(string hangul,int pos)
         {
+            // test at 2022.03.05 ... it was perfect.
             string divided = null;
             int interval=0;
 
@@ -327,12 +336,6 @@ namespace AutoTyping
                 divided += (Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS] == ' ') ? '\0' : Matching_Table.finalConsonant_kor[interval % Matching_Table.FINAL_CONS];
             }
             
-
-            
-
-
-
-
             /* init method -> it's imperfect
             int index = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
 
@@ -357,7 +360,7 @@ namespace AutoTyping
             return divided;
         }
 
-
+        #endregion
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
