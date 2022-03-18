@@ -194,6 +194,8 @@ namespace AutoTyping
         private static extern IntPtr GetActiveWindow();
         [DllImport("imm32.dll")]
         private static extern bool ImmGetConversionStatus(IntPtr hWnd, int dwConversion, int flags);
+        [DllImport("imm32.dll")]
+        private static extern bool ImmGetOpenStatus(IntPtr himc);
         #endregion
 
 
@@ -225,6 +227,7 @@ namespace AutoTyping
                 
                 if (vkCode.ToString() == "45")
                 {
+
                     string txt = GlobalVar.Text;
                     handle handle = new handle();
                     IntPtr hwndApp = GetForegroundWindow();
@@ -254,14 +257,14 @@ namespace AutoTyping
                                     string output=ToAlphabet(dvd);
                                     for (int k = 0; k < output.Length; k++)
                                     {
-                                        ChangeIME(hwnd,true);
+                                        //ChangeIME(hwnd,true);
                                         SendKeys.SendWait(output[k].ToString());
                                         Thread.Sleep(25);
                                     }
                                 }
                                 else
                                 {
-                                    ChangeIME(hwnd,false);
+                                    //ChangeIME(hwnd,false);
                                     SendKeys.SendWait(txt[i].ToString());
                                     Thread.Sleep(30);
                                 }
@@ -302,16 +305,23 @@ namespace AutoTyping
         {
             try
             {
-                ImmGetConversionStatus(hwnd,GlobalVar.conversion, 0);
+                //ImmGetConversionStatus(hwnd, GlobalVar.conversion, 0);
+                if (ImmGetOpenStatus(hwnd))
+                    GlobalVar.conversion = 1;
+                else
+                    GlobalVar.conversion = 0;
+                
                 if (GlobalVar.conversion == 1)
                     GlobalVar.stat = true;
                 else
                     GlobalVar.stat = false;
 
-                if (target!= GlobalVar.stat)
+                if (target != GlobalVar.stat)
                 {
                     keybd_event((byte)21, 0, 0, 0);
                 }
+                else
+                    return;
             }
             catch(Exception e)
             {
@@ -337,11 +347,11 @@ namespace AutoTyping
                     {
                         Changed += Matching_Table.initialConsonant_eng[Array.IndexOf(Matching_Table.initialConsonant_kor, divided[rep])];
                     }
-                    else if (Matching_Table.medialConsonant_kor.Contains(divided[rep]))
+                    else if (Matching_Table.medialConsonant_kor.Contains(divided[rep])&&Matching_Table.medialConsonant_eng[rep]!=' ')
                     {
                         Changed += Matching_Table.medialConsonant_eng[Array.IndexOf(Matching_Table.medialConsonant_kor, divided[rep])];
                     }
-                    else if (Matching_Table.finalConsonant_kor.Contains(divided[rep]))
+                    else if (Matching_Table.finalConsonant_kor.Contains(divided[rep]) && Matching_Table.finalConsonant_eng[rep] != ' ')
                     {
                         Changed += Matching_Table.finalConsonant_eng[Array.IndexOf(Matching_Table.finalConsonant_kor, divided[rep])];
                     }
