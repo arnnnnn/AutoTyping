@@ -32,9 +32,10 @@ namespace AutoTyping
         public static class GlobalVar
         {
             public static string Text;
-            public static IntPtr hwnd;
-            public static bool IMEmode=false;
+            public static bool stat;
+            public static int conversion = 0;
         }
+        
         public static class Matching_Table
         {
 
@@ -140,6 +141,25 @@ namespace AutoTyping
             KeyPreview = true;
         }
         
+        class handle:Form1
+        {
+            private IntPtr hwnd;
+            public void set(IntPtr hwndApp)
+            {
+                hwnd = ImmGetContext(hwndApp);
+            }
+            public void set()
+            {
+                hwnd = ImmGetContext(this.Handle);
+            }
+            public IntPtr get()
+            {
+                return hwnd;
+            }
+            ~handle() { }
+
+        }
+        
 
 
         #region DllImport Part for Hooking and IME
@@ -153,6 +173,9 @@ namespace AutoTyping
         [DllImport("user32.dll")]
         static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, int wParam, IntPtr IParam);
 
+        [DllImport("user32.dll")]
+        public static extern void keybd_event(byte vk, byte scan, int flags, int extrainfo);
+
         [DllImport("kernel32.dll")]
         static extern IntPtr LoadLibrary(string lpFileName);
 
@@ -165,7 +188,12 @@ namespace AutoTyping
         public static extern IntPtr ImmGetDefaultIMEWnd(IntPtr hWnd);
         [DllImport("imm32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
-
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetActiveWindow();
+        [DllImport("imm32.dll")]
+        private static extern bool ImmGetConversionStatus(IntPtr hWnd, int dwConversion, int flags);
         #endregion
 
 
@@ -194,10 +222,14 @@ namespace AutoTyping
             if (code >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(IParam);
-
+                
                 if (vkCode.ToString() == "45")
                 {
                     string txt = GlobalVar.Text;
+                    handle handle = new handle();
+                    IntPtr hwndApp = GetForegroundWindow();
+                    handle.set(hwndApp);
+                    IntPtr hwnd = handle.get();
                     try
                     {
                         if (txt==null || txt.Length == 0)
@@ -205,33 +237,33 @@ namespace AutoTyping
                         
                         else
                         {
-                            for(int i = 0; i < txt.Length; i++)
+                            for (int i = 0; i < txt.Length; i++)
                             {
-                                if (IsHangul(txt, i))
+                                if (txt[i] == '\n' || txt[i]=='\r')
+                                {
+                                    SendKeys.SendWait("\n");// "\n" or "\r" has two index so must be i+=1
+                                    i += 1;
+                                }
+                                else if (txt[i] == ' ')
+                                {
+                                    SendKeys.SendWait(" ");
+                                }
+                                else if (IsHangul(txt, i))
                                 {
                                     string dvd = DivideHangul(txt, i);
-                                    for (int k = 0; k < dvd.Length; k++)
+                                    string output=ToAlphabet(dvd);
+                                    for (int k = 0; k < output.Length; k++)
                                     {
-                                        SendKeys.SendWait(dvd[k].ToString());
-                                        Thread.Sleep(500);
+                                        ChangeIME(hwnd,true);
+                                        SendKeys.SendWait(output[k].ToString());
+                                        Thread.Sleep(25);
                                     }
                                 }
-                                #region Is txt[i] is SpecialLetter ? 
-
-                                else if (txt[i] == '\n')
-                                {
-                                    SendKeys.SendWait(txt[i].ToString());
-                                }
-                                else if (txt[i] ==' ')
-                                {
-                                    SendKeys.SendWait(txt[i].ToString());
-                                }
-                                #endregion
-
                                 else
                                 {
-                                    //MessageBox.Show(txt[i].ToString() + " is not hangul");
+                                    ChangeIME(hwnd,false);
                                     SendKeys.SendWait(txt[i].ToString());
+                                    Thread.Sleep(30);
                                 }
                             }
                         }
@@ -259,38 +291,34 @@ namespace AutoTyping
         private void Form1_Load(object sender, EventArgs e)
         {
             SetHook();
-            IntPtr hwnd=ImmGetContext(this.Handle);
-            GlobalVar.hwnd = hwnd;  
         }
         #endregion
 
         #region IMEmode change between korean and english
 
-        public static void ChangeIME(int target)
+        
+
+        public static void ChangeIME(IntPtr hwnd ,bool target)
         {
             try
             {
-                ImmSetConversionStatus(GlobalVar.hwnd, target, 0);
-                /*if (GlobalVar.IMEmode)
-                {
-                    GlobalVar.IMEmode = false;
-                    
-                    ImmSetConversionStatus(GlobalVar.hwnd, 0, 0);
-                    MessageBox.Show("Done. Change IME MODE kor to eng");
-                }
+                ImmGetConversionStatus(hwnd,GlobalVar.conversion, 0);
+                if (GlobalVar.conversion == 1)
+                    GlobalVar.stat = true;
                 else
+                    GlobalVar.stat = false;
+
+                if (target!= GlobalVar.stat)
                 {
-                    GlobalVar.IMEmode = true;
-                    ImmSetConversionStatus(GlobalVar.hwnd, 1, 0);
-                    MessageBox.Show("Done. Change IME MODE eng to kor");
-                }*/
+                    keybd_event((byte)21, 0, 0, 0);
+                }
             }
             catch(Exception e)
             {
                 MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
                 MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
             }
-
+            return;
         }
 
 
@@ -311,7 +339,7 @@ namespace AutoTyping
                     }
                     else if (Matching_Table.medialConsonant_kor.Contains(divided[rep]))
                     {
-                        Changed += Matching_Table.medialConsonant_eng[Array.IndexOf(Matching_Table.initialConsonant_kor, divided[rep])];
+                        Changed += Matching_Table.medialConsonant_eng[Array.IndexOf(Matching_Table.medialConsonant_kor, divided[rep])];
                     }
                     else if (Matching_Table.finalConsonant_kor.Contains(divided[rep]))
                     {
@@ -320,10 +348,6 @@ namespace AutoTyping
                     else if (Matching_Table.pairConsonant_kor.Contains(divided[rep]))
                     {
                         Changed += Matching_Table.pairConsonant_eng[Array.IndexOf(Matching_Table.pairConsonant_kor, divided[rep])];
-                    }
-                    else
-                    {
-                        MessageBox.Show("Error occured");
                     }
                 }
             }
@@ -410,23 +434,6 @@ namespace AutoTyping
 
         #endregion
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.KeyData)
-            {
-                case Keys.PageDown:
-                    string txt = MainTextBox.Text;
-                    for (int i = 0; i < txt.Length; i++)
-                    {
-                        string data = txt[i].ToString();
-                        SendKeys.SendWait(data);
-                        Task.Delay(100).Wait();
-
-                    }
-
-                    break;
-            }
-        }
 
         private void MainTextBox_TextChanged(object sender, EventArgs e)
         {
