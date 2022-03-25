@@ -14,7 +14,7 @@ using System.IO;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
-
+using System.Diagnostics;
 
 
 
@@ -32,8 +32,6 @@ namespace AutoTyping
         public static class GlobalVar
         {
             public static string Text;
-            public static bool stat;
-            public static int conversion = 0;
         }
         
         public static class Matching_Table
@@ -132,7 +130,6 @@ namespace AutoTyping
                     "fg", "qt"
                 };
         }
-
         
         public Form1()
         {
@@ -140,26 +137,6 @@ namespace AutoTyping
 
             KeyPreview = true;
         }
-        
-        class handle:Form1
-        {
-            private IntPtr hwnd;
-            public void set(IntPtr hwndApp)
-            {
-                hwnd = ImmGetContext(hwndApp);
-            }
-            public void set()
-            {
-                hwnd = ImmGetContext(this.Handle);
-            }
-            public IntPtr get()
-            {
-                return hwnd;
-            }
-            ~handle() { }
-
-        }
-        
 
 
         #region DllImport Part for Hooking and IME
@@ -181,22 +158,16 @@ namespace AutoTyping
 
         //For exchange between korean and english
         [DllImport("imm32.dll")]
-        private static extern IntPtr ImmGetContext(IntPtr hWnd);
-        [DllImport("imm32.dll")]
-        private static extern Boolean ImmSetConversionStatus(IntPtr hIMC, Int32 fdwConversion,Int32 fdwSentence);
-        [DllImport("imm32.dll")]
         public static extern IntPtr ImmGetDefaultIMEWnd(IntPtr hWnd);
-        [DllImport("imm32.dll")]
+
+        [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetActiveWindow();
-        [DllImport("imm32.dll")]
-        private static extern bool ImmGetConversionStatus(IntPtr hWnd, int dwConversion, int flags);
-        [DllImport("imm32.dll")]
-        private static extern bool ImmGetOpenStatus(IntPtr himc);
+
         #endregion
+
 
 
         #region  Keyboard Hooking Method
@@ -207,7 +178,7 @@ namespace AutoTyping
         const int WM_KEYDOWN = 0x100;
         private LowLevelKeyboardProc _proc = hookProc;
         private static IntPtr hhook = IntPtr.Zero;
-
+        static IntPtr hwnd;
         public void SetHook()
         {
             IntPtr hInstace = LoadLibrary("User32");
@@ -224,20 +195,13 @@ namespace AutoTyping
             if (code >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(IParam);
-                
                 if (vkCode.ToString() == "45")
                 {
-
                     string txt = GlobalVar.Text;
-                    handle handle = new handle();
-                    IntPtr hwndApp = GetForegroundWindow();
-                    handle.set(hwndApp);
-                    IntPtr hwnd = handle.get();
                     try
                     {
                         if (txt==null || txt.Length == 0)
                             MessageBox.Show("I can't find any Text for run this program.\nInput some text.");
-                        
                         else
                         {
                             for (int i = 0; i < txt.Length; i++)
@@ -255,18 +219,21 @@ namespace AutoTyping
                                 {
                                     string dvd = DivideHangul(txt, i);
                                     string output=ToAlphabet(dvd);
-                                    for (int k = 0; k < output.Length; k++)
+                                    int k = 0;
+                                    ChangeIME(true);
+                                    while (k < output.Length)
                                     {
-                                        //ChangeIME(hwnd,true);
-                                        SendKeys.SendWait(output[k].ToString());
-                                        Thread.Sleep(25);
+                                        string ins = output[k].ToString();
+                                        SendKeys.SendWait(ins);
+                                        k += 1;
                                     }
+                                    Thread.Sleep(100);
                                 }
                                 else
                                 {
-                                    //ChangeIME(hwnd,false);
+                                    ChangeIME(false);
                                     SendKeys.SendWait(txt[i].ToString());
-                                    Thread.Sleep(30);
+                                    Thread.Sleep(20);
                                 }
                             }
                         }
@@ -299,29 +266,28 @@ namespace AutoTyping
 
         #region IMEmode change between korean and english
 
-        
-
-        public static void ChangeIME(IntPtr hwnd ,bool target)
+        /// <summary>
+        /// This method is checking current IMEmode and change to kor <-> eng.
+        /// </summary>
+        /// <param name="target">if target is true -> want to chane IMEmode to korean.</param>
+        public static void ChangeIME(bool target)
         {
             try
             {
-                //ImmGetConversionStatus(hwnd, GlobalVar.conversion, 0);
-                if (ImmGetOpenStatus(hwnd))
-                    GlobalVar.conversion = 1;
-                else
-                    GlobalVar.conversion = 0;
-                
-                if (GlobalVar.conversion == 1)
-                    GlobalVar.stat = true;
-                else
-                    GlobalVar.stat = false;
+                hwnd = GetForegroundWindow();
+                IntPtr hime = ImmGetDefaultIMEWnd(hwnd);
+                IntPtr status = SendMessage(hime, 643, new IntPtr(0x5), new IntPtr(0));
 
-                if (target != GlobalVar.stat)
+                if (status.ToInt32() != 0)//if IME is korean
                 {
-                    keybd_event((byte)21, 0, 0, 0);
+                    if(target==false)//change to english
+                        keybd_event((byte)21, 0, 0, 0);
                 }
-                else
-                    return;
+                else//if IME is not korean
+                {
+                    if(target)//change to korean
+                        keybd_event((byte)21, 0, 0, 0);
+                }   
             }
             catch(Exception e)
             {
@@ -330,9 +296,6 @@ namespace AutoTyping
             }
             return;
         }
-
-
-
         #endregion
 
 
@@ -347,6 +310,10 @@ namespace AutoTyping
                     {
                         Changed += Matching_Table.initialConsonant_eng[Array.IndexOf(Matching_Table.initialConsonant_kor, divided[rep])];
                     }
+                    else if (Matching_Table.pairConsonant_kor.Contains(divided[rep]))
+                    {
+                        Changed += Matching_Table.pairConsonant_eng[Array.IndexOf(Matching_Table.pairConsonant_kor, divided[rep])];
+                    }
                     else if (Matching_Table.medialConsonant_kor.Contains(divided[rep])&&Matching_Table.medialConsonant_eng[rep]!=' ')
                     {
                         Changed += Matching_Table.medialConsonant_eng[Array.IndexOf(Matching_Table.medialConsonant_kor, divided[rep])];
@@ -355,10 +322,7 @@ namespace AutoTyping
                     {
                         Changed += Matching_Table.finalConsonant_eng[Array.IndexOf(Matching_Table.finalConsonant_kor, divided[rep])];
                     }
-                    else if (Matching_Table.pairConsonant_kor.Contains(divided[rep]))
-                    {
-                        Changed += Matching_Table.pairConsonant_eng[Array.IndexOf(Matching_Table.pairConsonant_kor, divided[rep])];
-                    }
+                    
                 }
             }
             catch(Exception e)
@@ -395,7 +359,7 @@ namespace AutoTyping
         /// <returns></returns>
         public static string DivideHangul(string hangul,int pos)
         {
-            // test at 2022.03.05 ... it was perfect.
+            // test at 2022.03.25 ... Didn't find any Error.
             // have to test many case for catch some error.
             string divided = null;
             int interval=0;
@@ -420,6 +384,7 @@ namespace AutoTyping
             }
 
             return divided;
+            #region TestCase
             /* init method -> it's imperfect
             int index = hangul[pos] - Matching_Table.HANGUL_UNICODE_START_INDEX;
 
@@ -440,6 +405,7 @@ namespace AutoTyping
                 divided += (char)final;
             }
             */
+            #endregion
         }
 
         #endregion
