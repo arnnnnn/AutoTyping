@@ -178,6 +178,7 @@ namespace AutoTyping
         const int WM_KEYDOWN = 0x100;
         private LowLevelKeyboardProc _proc = hookProc;
         private static IntPtr hhook = IntPtr.Zero;
+        static Thread thread;
         static IntPtr hwnd;
         public void SetHook()
         {
@@ -238,11 +239,21 @@ namespace AutoTyping
                             }
                         }
                     }
+                    catch(ThreadInterruptedException e)
+                    {
+                        MessageBox.Show("Thread Interrupted. Stop the all task");
+                    }
                     catch(Exception e)
                     {
                         MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
                         MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
                     }
+
+
+                }
+                else if (vkCode.ToString() == "35")
+                {
+                    thread.Abort();
 
                 }
                 return CallNextHookEx(hhook,code,(int)wParam,IParam);
@@ -261,6 +272,7 @@ namespace AutoTyping
         private void Form1_Load(object sender, EventArgs e)
         {
             SetHook();
+            //thread = new Thread();
         }
         #endregion
 
@@ -343,7 +355,7 @@ namespace AutoTyping
         /// <returns></returns>
         public static bool IsHangul(string hangul,int pos)
         {
-            bool res=false;
+            bool res;
             if (Regex.IsMatch(hangul[pos].ToString(), @"[ㄱ-ㅎㅏ-ㅣ가-힣]"))
                 res= true;
             else
