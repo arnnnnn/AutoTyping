@@ -24,14 +24,12 @@ using System.Diagnostics;
 
 namespace AutoTyping
 {
-    
-    
-    
     public partial class Form1 : Form
     {
         public static class GlobalVar
         {
             public static string Text;
+            public static bool ShowWindow = true;
         }
         
         public static class Matching_Table
@@ -138,7 +136,6 @@ namespace AutoTyping
             KeyPreview = true;
         }
 
-
         #region DllImport Part for Hooking and IME
         //For Keyboard Hooking
 
@@ -168,18 +165,15 @@ namespace AutoTyping
 
         #endregion
 
-
-
         #region  Keyboard Hooking Method
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
 
         const int WH_KEYBOARD_LL = 13;
         const int WM_KEYDOWN = 0x100;
         private LowLevelKeyboardProc _proc = hookProc;
         private static IntPtr hhook = IntPtr.Zero;
-        static Thread thread;
         static IntPtr hwnd;
+        static Thread thread;
         public void SetHook()
         {
             IntPtr hInstace = LoadLibrary("User32");
@@ -191,11 +185,47 @@ namespace AutoTyping
             UnhookWindowsHookEx(hhook);
         }
 
+        public static void AutoType(string txt)
+        {
+            for (int i = 0; i < txt.Length; i++)
+            {
+                if (txt[i] == '\n' || txt[i] == '\r')
+                {
+                    SendKeys.SendWait("\n");// "\n" or "\r" has two index so must be i+=1
+                    i += 1;
+                }
+                else if (txt[i] == ' ')
+                {
+                    SendKeys.SendWait(" ");
+                }
+                else if (IsHangul(txt, i))
+                {
+                    string dvd = DivideHangul(txt, i);
+                    string output = ToAlphabet(dvd);
+                    int k = 0;
+                    ChangeIME(true);
+                    while (k < output.Length)
+                    {
+                        string ins = output[k].ToString();
+                        SendKeys.SendWait(ins);
+                        k += 1;
+                    }
+                    Thread.Sleep(100);
+                }
+                else
+                {
+                    ChangeIME(false);
+                    SendKeys.SendWait(txt[i].ToString());
+                    Thread.Sleep(20);
+                }
+            }
+        }
         public static IntPtr hookProc(int code, IntPtr wParam, IntPtr IParam)
         {
             if (code >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(IParam);
+                
                 if (vkCode.ToString() == "45")
                 {
                     string txt = GlobalVar.Text;
@@ -205,56 +235,36 @@ namespace AutoTyping
                             MessageBox.Show("I can't find any Text for run this program.\nInput some text.");
                         else
                         {
-                            for (int i = 0; i < txt.Length; i++)
-                            {
-                                if (txt[i] == '\n' || txt[i]=='\r')
-                                {
-                                    SendKeys.SendWait("\n");// "\n" or "\r" has two index so must be i+=1
-                                    i += 1;
-                                }
-                                else if (txt[i] == ' ')
-                                {
-                                    SendKeys.SendWait(" ");
-                                }
-                                else if (IsHangul(txt, i))
-                                {
-                                    string dvd = DivideHangul(txt, i);
-                                    string output=ToAlphabet(dvd);
-                                    int k = 0;
-                                    ChangeIME(true);
-                                    while (k < output.Length)
-                                    {
-                                        string ins = output[k].ToString();
-                                        SendKeys.SendWait(ins);
-                                        k += 1;
-                                    }
-                                    Thread.Sleep(100);
-                                }
-                                else
-                                {
-                                    ChangeIME(false);
-                                    SendKeys.SendWait(txt[i].ToString());
-                                    Thread.Sleep(20);
-                                }
-                            }
+                            AutoType(txt);
                         }
                     }
-                    catch(ThreadInterruptedException e)
+                    catch(ThreadInterruptedException)
                     {
-                        MessageBox.Show("Thread Interrupted. Stop the all task");
+                        if (GlobalVar.ShowWindow)
+                        {
+                            MessageBox.Show("Thread Interrupted. Stop the all task. if you don't want to see this window.\r Unchecked.");
+                        }
+                        else
+                        {}
                     }
                     catch(Exception e)
                     {
                         MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
                         MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
                     }
-
-
                 }
-                else if (vkCode.ToString() == "35")
+                else if (vkCode.ToString() == "35")//If "end" pressed
                 {
-                    thread.Abort();
-
+                    try
+                    {
+                        thread = Thread.CurrentThread;
+                        thread.Interrupt();
+                    }
+                    catch(Exception e)
+                    {
+                        MessageBox.Show("Error occured ! \r Error is =>> \r" + e.ToString());
+                        MessageBox.Show("If you see this MessageBox Let me know. \r contact : dbs8543@gmail.com");
+                    }
                 }
                 return CallNextHookEx(hhook,code,(int)wParam,IParam);
             }
@@ -262,17 +272,16 @@ namespace AutoTyping
                 return CallNextHookEx(hhook, code, (int)wParam, IParam);
         }
 
-        
-
         private void Form1_FormClosing(object sender, CancelEventArgs e)
         {
+            thread = Thread.CurrentThread;
+            thread.Interrupt();
             UnHook();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             SetHook();
-            //thread = new Thread();
         }
         #endregion
 
@@ -426,6 +435,24 @@ namespace AutoTyping
         private void MainTextBox_TextChanged(object sender, EventArgs e)
         {
             GlobalVar.Text = MainTextBox.Text;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            GlobalVar.ShowWindow = checkBox1.Checked;
+        }
+
+        private void HelpBtn_clicked(object sender, EventArgs e)
+        {
+            MessageBox.Show(" 우선 박스에 입력하고싶은 글을 입력합니다.\r\r insert를 눌러서 사람이 입력하는것처럼 실행합니다. \r\r 언제든지 end 키를 이용하여 중지할수있습니다.");
+        }
+
+        private void ExitBtn_Clicked(object sender, EventArgs e)
+        {
+            thread = Thread.CurrentThread;
+            thread.Interrupt();
+            UnHook();
+            this.Close();
         }
     }   
 }
