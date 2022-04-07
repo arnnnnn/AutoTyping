@@ -208,15 +208,16 @@ namespace AutoTyping
                     {
                         string ins = output[k].ToString();
                         SendKeys.SendWait(ins);
+                        Thread.Sleep(10);
                         k += 1;
                     }
-                    Thread.Sleep(100);
+                    Thread.Sleep(50);
                 }
                 else
                 {
                     ChangeIME(false);
                     SendKeys.SendWait(txt[i].ToString());
-                    Thread.Sleep(20);
+                    Thread.Sleep(30);
                 }
             }
         }
